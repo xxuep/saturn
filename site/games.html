@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home</title>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<style>
+:root{
+--sidebar-width:260px;
+--sidebar-closed:0px;
+}
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Tiny5", sans-serif;
+}
+body{
+height:100vh;
+color:white;
+overflow:hidden;
+}
+.bg{
+position:fixed;
+inset:-10%;
+background:url("https://raw.githubusercontent.com/xxuep/saturn/main/image.jpg") center/110% no-repeat;
+animation:bgmove 40s ease-in-out infinite alternate;
+z-index:-2;
+transition:background .4s ease;
+}
+@keyframes bgmove{
+0%{transform:scale(1.1) translate(0,0)}
+100%{transform:scale(1.15) translate(-3%,2%)}
+}
+.overlay{
+position:fixed;
+inset:0;
+background:rgba(5,5,10,.65);
+z-index:-1;
+}
+.layout{
+display:flex;
+height:100%;
+}
+.sidebar{
+width:var(--sidebar-width);
+background:linear-gradient(#555,#888);
+backdrop-filter:blur(14px);
+border-right:1px solid rgba(255,255,255,.08);
+padding:24px;
+display:flex;
+flex-direction:column;
+gap:16px;
+transition:width .35s ease;
+overflow:hidden;
+z-index: 10;
+}
+.sidebar.closed{
+width:var(--sidebar-closed);
+padding:0;
+}
+.sidebar h1{
+font-size:22px;
+font-weight:800;
+white-space:nowrap;
+}
+.side-btn{
+padding:14px;
+border-radius:14px;
+background:linear-gradient(#111,#444);
+cursor:pointer;
+transition:.2s;
+white-space:nowrap;
+}
+.side-btn:hover{
+transform:translateX(4px);
+background:rgba(255,255,255,.15);
+}
+.content{
+flex:1;
+padding:50px 60px;
+transition:all .35s ease;
+overflow:auto;
+position: relative;
+display: flex;
+flex-direction: column;
+}
+
+/* New Iframe styles */
+#app-frame {
+    display: none;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 12px;
+    background: white;
+    flex: 1;
+}
+
+.toggle{
+font-size:26px;
+cursor:pointer;
+width:fit-content;
+margin-bottom:30px;
+user-select:none;
+}
+.title{
+font-size:48px;
+font-weight:800;
+margin-bottom:30px;
+}
+.search-box{
+max-width:600px;
+margin-bottom:40px;
+}
+.search-box input{
+width:100%;
+padding:18px 22px;
+border-radius:18px;
+border:none;
+outline:none;
+background:rgba(255,255,255,.12);
+color:white;
+font-size:18px;
+}
+.status{
+margin-top:10px;
+font-size:14px;
+opacity:.75;
+}
+.apps{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+gap:26px;
+}
+.app{
+aspect-ratio:1/1;
+border-radius:22px;
+position:relative;
+cursor:pointer;
+background-size:cover;
+background-position:center;
+overflow:hidden;
+transition:.25s;
+}
+.app::after{
+content:"";
+position:absolute;
+inset:0;
+background:linear-gradient(to top,rgba(0,0,0,.6),transparent);
+}
+.app:hover{
+transform:translateY(-8px) scale(1.02);
+box-shadow:0 30px 60px rgba(0,0,0,.5);
+}
+.app span{
+position:absolute;
+bottom:16px;
+left:16px;
+z-index:1;
+}
+#musicToggle{
+position:fixed;
+bottom:18px;
+right:18px;
+width:42px;
+height:42px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:22px;
+background:rgba(0,0,0,0.7);
+color:white;
+border:1px solid rgba(255,255,255,0.4);
+cursor:pointer;
+z-index:99999;
+user-select:none;
+transition:background .3s ease,color .3s ease,transform .2s ease;
+}
+#musicToggle:hover{
+background:white;
+color:black;
+transform:scale(1.08);
+}
+#musicToggle.playing{
+box-shadow:0 0 12px rgba(255,255,255,.6);
+}
+#gear{
+position:fixed;
+top:18px;
+right:18px;
+font-size:26px;
+cursor:pointer;
+z-index:99999;
+}
+#settings{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.45);
+display:flex;
+align-items:stretch;
+justify-content:flex-end;
+opacity:0;
+pointer-events:none;
+transition:opacity .28s ease;
+z-index:99998;
+}
+#settings.open{
+opacity:1;
+pointer-events:auto;
+}
+.settings-wrap{
+width:740px;
+max-width:100%;
+height:100%;
+transform:translateX(100%);
+transition:transform .35s cubic-bezier(.2,.9,.2,1);
+display:flex;
+}
+#settings.open .settings-wrap{
+transform:translateX(0);
+}
+.settings-side{
+width:220px;
+background:rgba(20,20,30,.95);
+padding:20px;
+display:flex;
+flex-direction:column;
+gap:12px;
+}
+.settings-main{
+flex:1;
+padding:40px;
+overflow:auto;
+background:linear-gradient(180deg, rgba(10,10,14,0.98), rgba(8,8,12,0.98));
+}
+.settings-btn{
+padding:14px;
+border-radius:12px;
+background:rgba(255,255,255,.06);
+cursor:pointer;
+}
+.settings-btn.active{
+background:white;
+color:black;
+}
+.opt{
+margin-bottom:20px;
+padding:16px;
+background:rgba(255,255,255,.03);
+border-radius:14px;
+cursor:pointer;
+}
+.switch{
+display:flex;
+align-items:center;
+gap:12px;
+}
+input{
+background:black;
+color:white;
+border:none;
+padding:8px;
+border-radius:8px;
+}
+.wall-list{
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+.wall-item{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:12px;
+padding:12px;
+border-radius:10px;
+background:rgba(255,255,255,0.03);
+cursor:pointer;
+}
+.wall-thumb{
+width:64px;
+height:48px;
+background-size:cover;
+background-position:center;
+border-radius:8px;
+flex-shrink:0;
+}
+.song-list{
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+.song-item{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:12px;
+padding:12px;
+border-radius:10px;
+background:rgba(255,255,255,0.03);
+}
+.song-controls{
+display:flex;
+gap:8px;
+align-items:center;
+}
+.custom-checkbox{
+width:44px;
+height:26px;
+background:rgba(255,255,255,0.08);
+border-radius:999px;
+position:relative;
+cursor:pointer;
+display:inline-block;
+}
+.custom-checkbox .knob{
+width:20px;
+height:20px;
+background:white;
+border-radius:50%;
+position:absolute;
+top:3px;
+left:3px;
+transition:all .18s ease;
+}
+.custom-checkbox.on{
+background:linear-gradient(90deg,#4caf50,#2ecc71);
+}
+.custom-checkbox.on .knob{
+left:21px;
+}
+.key-display{
+padding:10px 12px;
+border-radius:8px;
+background:rgba(255,255,255,0.04);
+display:inline-block;
+min-width:120px;
+text-align:center;
+}
+.assign-btn{
+padding:10px 12px;
+border-radius:8px;
+background:white;
+color:black;
+cursor:pointer;
+border:none;
+}
+.tab-choices{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+}
+.tab-choice{
+padding:8px 12px;
+border-radius:8px;
+background:rgba(255,255,255,0.04);
+cursor:pointer;
+}
+.list-selected{
+outline:2px solid rgba(255,255,255,0.12);
+}
+.capture-overlay{
+position:fixed;
+inset:0;
+display:none;
+z-index:100000;
+align-items:center;
+justify-content:center;
+backdrop-filter: blur(4px);
+background: rgba(0,0,0,0.6);
+}
+.capture-box{
+padding:24px;
+background:rgba(10,10,14,0.95);
+border-radius:12px;
+text-align:center;
+}
+.hint{
+opacity:.8;
+margin-top:12px;
+font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="bg" id="bg"></div>
+<div class="overlay"></div>
+
+<div id="gear">⚙</div>
+
+<div id="settings" aria-hidden="true">
+<div class="settings-wrap">
+<div class="settings-side">
+<div class="settings-btn active" data-page="0">Wallpaper</div>
+<div class="settings-btn" data-page="1">Music</div>
+<div class="settings-btn" data-page="2">Panic</div>
+<div class="settings-btn" data-page="3">Font</div>
+</div>
+<div class="settings-main" id="settingsMain"></div>
+</div>
+</div>
+
+<div class="layout">
+
+<aside class="sidebar closed" id="sidebar">
+<h1>S4turn v3</h1>
+<div class="side-btn" onclick="goHome()">Home</div>
+<div class="side-btn" onclick="openApp('https://youtube.com')">Apps</div>
+<div class="side-btn" onclick="openApp('https://example.com/settings')">Settings</div>
+<div class="side-btn" onclick="openApp('https://example.com/profile')">Profile</div>
+</aside>
+
+<main class="content">
+<div class="toggle" onclick="document.getElementById('sidebar').classList.toggle('closed')">☰</div>
+
+<div id="main-menu">
+    <div class="title">S4turn V3 : Games</div>
+
+    <div class="search-box">
+    <input type="text" placeholder="search 65+ games..." oninput="filterApps(this.value)" onkeydown="if(event.key==='Enter') openApp(this.value)">
+    </div>
+
+    <section class="apps">
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/1v1%20loo.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/1v1.lol')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/2048logo.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/2048')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/ages%20of%20conflict.png')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/agesofconflict')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/amongssusss.png')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/amongus')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/angybirds.jpg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/angrybirds')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/awesome-tanks-game-icon.png')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/awesometanks')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/awesome-tanks-2-icon.png')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/awesometanks2')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/horror/backroooooooooooooooomsss.jpg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/backrooms')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/baconmaydieeee.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/baconmaydie')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/horror/image_2025-12-13_193351410.png')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/badparenting')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/horror/baldisbasicsss.jpg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/baldisbasics')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/basketball-legends-2020.jpg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/basketballlegends')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/basketball-stars1-m240x240.jpg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/basketballstars')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/basket-bros.jpg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/basketbros')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/basket-random_16x9-cover.png')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/basketrandom')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/bitlfieee.png')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/bitlife')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/bowmasterssss.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/bowmasters')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/boxingrandomm.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/boxingrandom')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/candy%20cruhsss.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/candycrush')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/cookieclickerlogoyk.jpg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/cookieclicker')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/crazy-cattle-game.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/crazycattle3d')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/crossyroaddd.jpg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/crossyroad')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/diftbosssssssss.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/driftboss')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/drivemaddddddddd.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/drivemad')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/escapppre5r6tfujk.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/escaperoad')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/escapeppridoaoaod2222.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/escaperoad2')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/flappyboirdd.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/flappybird')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/fnannfnfn1111.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/fnaf1')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/fnaf2222222.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/fnaf2')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/fnaffffffff3.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/fnaf3')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/fnafaffafafff44444.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/fnaf4')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/footballbross.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/footballbros')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/footballlegendss.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/footballlegends')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/geometrydashhshshs.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/geometrydash')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/bennet%20foddysy%20getting%20over%20it.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/gettingoverit')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/minigame/gorillallalalalataagaagga.jpg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/gorillatag')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/grannyy.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/granny')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/granny22.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/granny2')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/sandbox/halkflife.png')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/halflife')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/haopyweehsl.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/happywheels')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/idle-breakout.png')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/idlebreakout')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/johhhnynynynyntighg%5D.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/johnnytrigger')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/karatetetebroosss.jpg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/karatebros')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/leveleleldeviil.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/leveldevil')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/melonplaygroudndddd.png')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/melonplayground')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/monkeymarrttttt.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/monkeymart')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/motoox3mmm.jpeg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/motox3m')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/mtotox3mmmm2222.jpg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/motox3m2')"></div>
+
+    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/images/motoootx3mmmm3333.jpg')" onclick="openApp('https://sites.google.com/gse.cusd80.com/saturn/games/motox3m3')"></div>
+    </section>
+</div>
+
+<iframe id="app-frame" src=""></iframe>
+</main>
+
+<div id="musicToggle">♪</div>
+<audio id="bgMusic" loop></audio>
+
+<div class="capture-overlay" id="captureOverlay">
+<div class="capture-box">
+<div style="font-size:20px;font-weight:700">Press the key combination now</div>
+<div class="hint">Only use Ctrl, Shift, Alt as modifiers and one additional key (A-Z, 0-9, F1-F12 or punctuation)</div>
+<div style="margin-top:12px"><button class="assign-btn" onclick="cancelCapture()">Cancel</button></div>
+</div>
+</div>
+
+<script>
+// --- App Search ---
+const apps = document.querySelectorAll(".app");
+function filterApps(query) {
+    const q = query.trim().toLowerCase();
+    apps.forEach(app => {
+        const name = app.querySelector("span").innerText.toLowerCase();
+        app.style.display = name.includes(q) ? "block" : "none";
+    });
+}
+
+// --- Navigation Logic ---
+const mainMenu = document.getElementById("main-menu");
+const appFrame = document.getElementById("app-frame");
+
+// Modified to open in a new tab
+function openApp(url) {
+    if(!url) return;
+    if(!url.startsWith('http')) url = 'https://' + url;
+    window.open(url, "_blank"); // Open in new tab
+}
+
+// Modified Home button to open home in a new tab
+function goHome() {
+    window.open('/', "_blank");
+}
+
+const gear=document.getElementById("gear")
+const settings=document.getElementById("settings")
+const settingsWrap=document.querySelector(".settings-wrap")
+const settingsMain=document.getElementById("settingsMain")
+const bg=document.getElementById("bg")
+const music=document.getElementById("bgMusic")
+const captureOverlay=document.getElementById("captureOverlay")
+const musicToggleBtn=document.getElementById("musicToggle")
+const sideButtons = document.querySelectorAll(".settings-side .settings-btn")
+
+const wallpapers=[
+{name:"S4turn V2", url:"https://raw.githubusercontent.com/xxuep/saturn/main/image.jpg"},
+{name:"S4turn V1", url:"https://raw.githubusercontent.com/xxuep/saturn/main/icons/og%20s4turn%20project%20s4turn%20wallpaper.jpg"},
+{name:"Just Saturn", url:"https://raw.githubusercontent.com/xxuep/saturn/main/icons/saturnotherwallpaper.jpg"},
+{name:"Lizz", url:"https://raw.githubusercontent.com/xxuep/lizz/main/cool%20rog%20design%20ylk.gif"}
+]
+
+const songs=[
+{name:"Space Ambience", url:"https://raw.githubusercontent.com/xxuep/saturn/main/music/10%20minute%20Space%20Ambient%20Music%20with%20Deep%20Relaxation%20%20Meditation%204K%20%20Space%20music%20%20Space%20Galaxy%20-%20Relaxing%20Music%20with%20a%20Beautiful%20View.mp3"},
+{name:"Odyssey's Trash", url:"https://raw.githubusercontent.com/xxuep/saturn/main/music/Odyssey's%20Trash.mp3"},
+{name:"Less Than Zero - Weeknd", url:"https://raw.githubusercontent.com/xxuep/saturn/main/music/The%20Weeknd%20-%20Less%20Than%20Zero%20(Audio)%20-%20TheWeekndVEVO.mp3"}
+]
+
+let panicOn=false
+let panicKeyObj={ctrl:false,shift:false,alt:false,key:"x"}
+let panicTab="https://google.com"
+let listening=false
+let selectedWallpaperIndex=0
+let selectedSongIndex=0
+let selectedTabIndex=0
+let currentFont="Tiny5, sans-serif"
+
+function openSettings(){
+settings.classList.add("open")
+settings.setAttribute("aria-hidden","false")
+page(0)
+}
+function closeSettings(){
+settings.classList.remove("open")
+settings.setAttribute("aria-hidden","true")
+}
+gear.onclick=()=>settings.classList.contains("open")?closeSettings():openSettings()
+settings.addEventListener("click",e=>{
+if(e.target===settings) closeSettings()
+})
+
+sideButtons.forEach(btn=>{
+btn.addEventListener("click",()=>{
+const p = Number(btn.getAttribute("data-page"))
+page(p)
+})
+})
+
+function page(i){
+sideButtons.forEach((b,n)=>b.classList.toggle("active",n===i))
+if(i===0) settingsMain.innerHTML=renderWallpapers()
+if(i===1) settingsMain.innerHTML=renderSongs()
+if(i===2) settingsMain.innerHTML=renderPanic()
+if(i===3) settingsMain.innerHTML=renderFontSettings()
+}
+
+const fontOptions = [
+  { name: "S4turn V3", cssName: "Tiny5", family: "'Tiny5', sans-serif" },
+  { name: "S4turn V2", cssName: "Pixelify Sans", family: "'Pixelify Sans', sans-serif" },
+  { name: "S4turn V1", cssName: "Bungee", family: "'Bungee', cursive" },
+  { name: "Verdana", cssName: "Verdana", family: "Verdana, sans-serif" },
+  { name: "Georgia", cssName: "Georgia", family: "Georgia, serif" }
+];
+
+function renderFontSettings(){
+  let s = `<div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-weight:700">Choose Font</div>`;
+  fontOptions.forEach(f=>{
+    const sel = f.family === currentFont ? "list-selected" : "";
+    s += `<div class="tab-choice ${sel}" onclick="setFont('${f.cssName.replace(/'/g,'')}', '${escapeQuotes(f.family)}')">${f.name}</div>`;
+  });
+  s += `</div>`;
+  return s;
+}
+
+function escapeQuotes(str){
+  return str.replace(/'/g,"\\'");
+}
+
+function setFont(cssName, family){
+  currentFont = family;
+  const styleId = "fontOverride";
+  let existing = document.getElementById(styleId);
+  if(!existing){
+    existing = document.createElement("style");
+    existing.id = styleId;
+    document.head.appendChild(existing);
+  }
+  const loadPromise = document.fonts && document.fonts.load
+    ? document.fonts.load(`16px "${cssName}"`)
+    : Promise.resolve();
+  const timeout = new Promise((res)=>setTimeout(res, 1000));
+  Promise.race([loadPromise, timeout]).then(()=>{
+    existing.textContent = `html, body, *, *::before, *::after, input, button, textarea, select { font-family: ${family} !important; }`;
+    page(3);
+  }).catch(()=>{
+    existing.textContent = `html, body, *, *::before, *::after, input, button, textarea, select { font-family: ${family} !important; }`;
+    page(3);
+  });
+}
+
+(function applyInitialFont(){
+  const styleId = "fontOverride";
+  let existing = document.getElementById(styleId);
+  if(!existing){
+    existing = document.createElement("style");
+    existing.id = styleId;
+    document.head.appendChild(existing);
+  }
+  existing.textContent = `html, body, *, *::before, *::after, input, button, textarea, select { font-family: ${currentFont} !important; }`;
+})();
+
+function renderWallpapers(){
+let s=""
+s+=`<div class="wall-list">`
+wallpapers.forEach((w,i)=>{
+const selectedClass = i===selectedWallpaperIndex ? "list-selected" : ""
+s+=`<div class="wall-item ${selectedClass}" onclick="selectWallpaper(${i})">
+<div style="display:flex;align-items:center;gap:12px">
+<div class="wall-thumb" style="background-image:url('${w.url}')"></div>
+<div style="display:flex;flex-direction:column">
+<div style="font-weight:700">${w.name}</div>
+<div style="font-size:13px;opacity:.7">Preview</div>
+</div>
+</div>
+<div><button class="assign-btn" onclick="applyWallpaper(event,${i})">Use</button></div>
+</div>`
+})
+s+=`</div>`
+return s
+}
+function renderSongs(){
+let s=""
+s+=`<div class="song-list">`
+songs.forEach((snd,i)=>{
+const selectedClass = i===selectedSongIndex ? "list-selected" : ""
+s+=`<div class="song-item ${selectedClass}">
+<div style="display:flex;align-items:center;gap:12px">
+<div style="font-weight:700">${snd.name}</div>
+<div style="font-size:13px;opacity:.7">${formatSongDetails(snd.url)}</div>
+</div>
+<div class="song-controls">
+<button class="assign-btn" onclick="setSong(event,${i})">Play</button>
+<button class="assign-btn" onclick="selectSong(${i})">Select</button>
+</div>
+</div>`
+})
+s+=`</div>`
+return s
+}
+function renderPanic(){
+let checkedClass = panicOn ? "custom-checkbox on" : "custom-checkbox"
+let keyDisplay = formatKeyDisplay(panicKeyObj)
+let tabsHtml=""
+const tabs = [
+{label:"Google", url:"https://google.com"},
+{label:"GitHub", url:"https://github.com"},
+{label:"Discord", url:"https://discord.com"},
+{label:"StackOverflow", url:"https://stackoverflow.com"}
+]
+tabs.forEach((t,i)=>{
+const sel = i===selectedTabIndex ? "list-selected" : ""
+tabsHtml+=`<div class="tab-choice ${sel}" onclick="chooseTab(${i})">${t.label}</div>`
+})
+let s=""
+s+=`<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:12px">
+<div class="${checkedClass}" id="panicSwitch" onclick="togglePanic()"><div class="knob"></div></div>
+<div style="font-weight:700">Enable Panic</div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:flex-end">
+<div style="font-size:13px;opacity:.8">Current: <span id="panicOnLabel">${panicOn?"ON":"OFF"}</span></div>
+</div>
+</div>
+<div style="display:flex;gap:12px;align-items:center">
+<div>
+<div class="key-display" id="keyDisplay">${keyDisplay}</div>
+</div>
+<div>
+<button class="assign-btn" id="assignBtn" onclick="startCapture()">Assign</button>
+</div>
+</div>
+<div style="display:flex;gap:12px;align-items:center">
+<div style="font-weight:700">Choose tab to open on panic</div>
+<div class="tab-choices">${tabsHtml}</div>
+</div>
+<div style="margin-top:12px">
+<div style="font-size:13px;opacity:.8">Note: Hold your chosen modifiers (Ctrl/Shift/Alt) and press a single other key. Example: Ctrl+Shift+K</div>
+</div>
+</div>`
+return s
+}
+
+function formatSongDetails(u){return ""}
+function formatKeyDisplay(k){
+let parts=[]
+if(k.ctrl) parts.push("Ctrl")
+if(k.shift) parts.push("Shift")
+if(k.alt) parts.push("Alt")
+if(k.key) parts.push(k.key.toUpperCase())
+if(parts.length===0) return "None"
+return parts.join("+")
+}
+function selectWallpaper(i){selectedWallpaperIndex=i;document.querySelectorAll(".wall-item").forEach((el,idx)=>el.classList.toggle("list-selected", idx===i))}
+function applyWallpaper(e,i){e.stopPropagation();bg.style.background=`url('${wallpapers[i].url}') center/110% no-repeat`;selectWallpaper(i)}
+function setSong(e,i){e.stopPropagation();music.src=songs[i].url;music.play();selectedSongIndex=i;updateMusicToggle(true);document.querySelectorAll(".song-item").forEach((el,idx)=>el.classList.toggle("list-selected", idx===i))}
+function selectSong(i){selectedSongIndex=i;document.querySelectorAll(".song-item").forEach((el,idx)=>el.classList.toggle("list-selected", idx===i))}
+function togglePanic(){panicOn=!panicOn;document.getElementById("panicSwitch")?.classList.toggle("on",panicOn);document.getElementById("panicOnLabel")&&(document.getElementById("panicOnLabel").textContent=panicOn?"ON":"OFF")}
+function chooseTab(i){selectedTabIndex=i;const urls=["https://google.com","https://github.com","https://discord.com","https://stackoverflow.com"];panicTab=urls[i];document.querySelectorAll(".tab-choice").forEach((el,idx)=>el.classList.toggle("list-selected", idx===i))}
+function startCapture(){if(listening) return;listening=true;captureOverlay.style.display="flex";window.addEventListener("keydown",captureHandler)}
+function cancelCapture(){listening=false;captureOverlay.style.display="none";window.removeEventListener("keydown",captureHandler)}
+function captureHandler(e){e.preventDefault();const allowed=["Control","Shift","Alt"];if(allowed.includes(e.key)) return;let k=e.key.toLowerCase();panicKeyObj={ctrl:e.ctrlKey,shift:e.shiftKey,alt:e.altKey,key:k};document.getElementById("keyDisplay")&&(document.getElementById("keyDisplay").textContent=formatKeyDisplay(panicKeyObj));listening=false;captureOverlay.style.display="none";window.removeEventListener("keydown",captureHandler)}
+function updateMusicToggle(p){if(p){musicToggleBtn.classList.add("playing");musicToggleBtn.textContent="⏸"}else{musicToggleBtn.classList.remove("playing");musicToggleBtn.textContent="♪"}}
+function applyInitials(){bg.style.background=`url('${wallpapers[0].url}') center/110% no-repeat`;music.src = songs[0].url;music.pause();document.getElementById("panicSwitch")?.classList.toggle("on",panicOn);document.getElementById("panicOnLabel")&&(document.getElementById("panicOnLabel").textContent=formatKeyDisplay(panicKeyObj));document.getElementById("keyDisplay")&&(document.getElementById("keyDisplay").textContent=formatKeyDisplay(panicKeyObj))}
+applyInitials()
+page(0)
+
+document.addEventListener("keydown",e=>{
+if(!panicOn) return
+let w=panicKeyObj
+if((e.ctrlKey===!!w.ctrl)&&(e.shiftKey===!!w.shift)&&(e.altKey===!!w.alt)&&(e.key.toLowerCase()===w.key)) window.open(panicTab,"_blank")
+})
+
+musicToggleBtn.onclick=()=>{if(music.paused){music.play();updateMusicToggle(true)}else{music.pause();updateMusicToggle(false)}}
+music.addEventListener("play",()=>updateMusicToggle(true))
+music.addEventListener("pause",()=>updateMusicToggle(false))
+music.addEventListener("ended",()=>updateMusicToggle(false))
+</script>
+
+</body>
+</html>
