@@ -8,6 +8,67 @@
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
 <style>
+/* --- SCHOOL CLOAK CSS --- */
+#school-cloak {
+    position: fixed;
+    inset: 0;
+    z-index: 9999999;
+    background: #f4f7f9;
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    display: flex;
+    flex-direction: column;
+    transition: opacity .35s ease;
+}
+.cloak-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+.cloak-header {
+    background: #2c3e50;
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.cloak-container {
+    display: flex;
+    flex: 1;
+}
+.cloak-sidebar {
+    width: 200px;
+    background: #fff;
+    border-right: 1px solid #ddd;
+    padding: 20px;
+}
+.cloak-sidebar div {
+    padding: 10px;
+    margin-bottom: 5px;
+    color: #555;
+    border-radius: 4px;
+    cursor: default;
+}
+.cloak-main {
+    flex: 1;
+    padding: 40px;
+}
+.cloak-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+.cloak-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.cloak-card h3 { margin-bottom: 10px; color: #2980b9; }
+.cloak-card p { font-size: 14px; color: #777; }
+
+/* --- ORIGINAL CSS --- */
 :root{
 --sidebar-width:260px;
 --sidebar-closed:0px;
@@ -56,7 +117,6 @@ flex-direction:column;
 gap:16px;
 transition:width .35s ease;
 overflow:hidden;
-z-index: 10;
 }
 .sidebar.closed{
 width:var(--sidebar-closed);
@@ -84,27 +144,7 @@ flex:1;
 padding:50px 60px;
 transition:all .35s ease;
 overflow:auto;
-position: relative;
-display: flex;
-flex-direction: column;
 }
-
-#app-frame {
-    display: none;
-    width: 100%;
-    height: 100%;
-    border: none;
-    border-radius: 12px;
-    background: white;
-    flex: 1;
-}
-
-#frame-controls {
-    display: none;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
 .toggle{
 font-size:26px;
 cursor:pointer;
@@ -394,6 +434,33 @@ font-size:14px;
 
 <body>
 
+<div id="school-cloak">
+    <div class="cloak-header">
+        <div style="font-weight:bold; font-size: 1.2rem;">Student Dashboard - Portal</div>
+        <div>Welcome, Student</div>
+    </div>
+    <div class="cloak-container">
+        <div class="cloak-sidebar">
+            <div style="background:#eef2f7; color:#2c3e50; font-weight:bold;">Home</div>
+            <div>Modules</div>
+            <div>Assignments</div>
+            <div>Grades</div>
+            <div>Library</div>
+        </div>
+        <div class="cloak-main">
+            <h2 style="margin-bottom:20px; color:#2c3e50;">Active Courses</h2>
+            <div class="cloak-grid">
+                <div class="cloak-card"><h3>Mathematics</h3><p>Calculus and Algebra IV</p></div>
+                <div class="cloak-card"><h3>English</h3><p>Literary Analysis 101</p></div>
+                <div class="cloak-card"><h3>General Science</h3><p>Chemical Foundations</p></div>
+                <div class="cloak-card"><h3>ELA</h3><p>Grammar and Composition</p></div>
+                <div class="cloak-card"><h3>Calculator</h3><p>Statistical Tools</p></div>
+                <div class="cloak-card"><h3>Teaching</h3><p>Peer Review Modules</p></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="bg" id="bg"></div>
 <div class="overlay"></div>
 
@@ -414,40 +481,52 @@ font-size:14px;
 <div class="layout">
 
 <aside class="sidebar closed" id="sidebar">
-    <h1>S4turn v3</h1>
-    <div class="side-btn" onclick="goHome()">Home</div>
-    <div class="side-btn" onclick="openApp('https://sites.google.com/gse.cusd80.com/s4turnv3-private-build-v0-0-1/main-344635465/games')">Games</div>
-    <div class="side-btn" onclick="openApp('https://google.com')">Settings</div>
-    <div class="side-btn" onclick="openApp('https://github.com')">Profile</div>
+<h1>S4turn v3</h1>
+<div class="side-btn" onclick="window.open('https://sites.google.com/gse.cusd80.com/saturn/','_blank')">Home</div>
+<div class="side-btn" onclick="window.open('https://sites.google.com/gse.cusd80.com/saturn/games','_blank')">Games</div>
 </aside>
 
 <main class="content">
 <div class="toggle" onclick="document.getElementById('sidebar').classList.toggle('closed')">☰</div>
 
-<div id="frame-controls">
-    <button class="assign-btn" onclick="goHome()">← Back Home</button>
-    <button class="assign-btn" id="open-external" onclick="">Open in New Tab</button>
+<div class="title">S4turn V3 : Terminal</div>
+
+<div class="search-box">
+  <div style="position:relative; width:100%;">
+    <input
+      type="text"
+      placeholder="search or enter url..."
+      id="mainSearchInput"
+      autocomplete="off"
+      spellcheck="false"
+      style="width:100%; padding-right:52px;"
+    >
+    <div
+      id="searchBtn"
+      style="
+        position:absolute;
+        right:10px;
+        top:50%;
+        transform:translateY(-50%);
+        width:36px;
+        height:36px;
+        border-radius:50%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        cursor:pointer;
+        background:rgba(255,255,255,0.12);
+        user-select:none;
+      "
+    >🔍</div>
+  </div>
+  <div class="status" id="proxyStatus">Proxy Status: 🟢</div>
 </div>
 
-<div id="main-menu">
-    <div class="title">S4turn V3 : Terminal</div>
 
-    <div class="search-box">
-    <input type="text" placeholder="search or enter url..." onkeydown="if(event.key==='Enter') openApp(this.value)">
-    <div class="status">Proxy Status: 🔴 Offline (ixl.works is blocked)</div>
-    </div>
-
-    <section class="apps">
-    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/Untitled731_20251218145131.png')" onclick="openApp('https://google.com')"><span>Games</span></div>
-    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/music/Untitled732_20251218184220.png')" onclick="openApp('https://github.com')"><span>Music</span></div>
-    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/movies/Untitled730_20251218144312.png')" onclick="openApp('https://stackoverflow.com')"><span>Movies</span></div>
-    <div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/web/Untitled746_20251231140428.png')" onclick="openApp('https://discord.com')"><span>Contributors</span></div>
-    <div class="app" style="background-image:url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4')" onclick="openApp('https://spotify.com')"><span>Music</span></div>
-    <div class="app" style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee')" onclick="openApp('https://google.com')"><span>Settings</span></div>
-    </section>
-</div>
-
-<iframe id="app-frame" src=""></iframe>
+<section class="apps">
+<div class="app" style="background-image:url('https://raw.githubusercontent.com/xxuep/games/main/Untitled731_20251218145131.png')" onclick="window.open('https://sites.google.com/gse.cusd80.com/saturn/games','_blank')"><span>Games</span></div>
+</section>
 </main>
 
 <div id="musicToggle">♪</div>
@@ -456,36 +535,26 @@ font-size:14px;
 <div class="capture-overlay" id="captureOverlay">
 <div class="capture-box">
 <div style="font-size:20px;font-weight:700">Press the key combination now</div>
-<div class="hint">Use Ctrl/Shift/Alt + a key</div>
+<div class="hint">Only use Ctrl, Shift, Alt as modifiers and one additional key (A-Z, 0-9, F1-F12 or punctuation)</div>
 <div style="margin-top:12px"><button class="assign-btn" onclick="cancelCapture()">Cancel</button></div>
 </div>
 </div>
 
 <script>
-const mainMenu = document.getElementById("main-menu");
-const appFrame = document.getElementById("app-frame");
-const frameControls = document.getElementById("frame-controls");
-const externalBtn = document.getElementById("open-external");
+/* 1. CLOAK LOGIC */
+document.addEventListener('DOMContentLoaded', () => {
+  const cloak = document.getElementById('school-cloak');
+  if(!cloak) return;
+  setTimeout(() => {
+    cloak.classList.add('cloak-hidden');
+    setTimeout(()=>cloak.style.display='none', 360);
+  }, 100);
+});
 
-function openApp(url) {
-    if(!url) return;
-    if(!url.startsWith('http')) url = 'https://' + url;
-    mainMenu.style.display = "none";
-    appFrame.style.display = "block";
-    frameControls.style.display = "flex";
-    externalBtn.onclick = () => window.open(url, '_blank');
-    appFrame.src = url;
-}
-
-function goHome() {
-    appFrame.style.display = "none";
-    frameControls.style.display = "none";
-    appFrame.src = "";
-    mainMenu.style.display = "block";
-}
-
+/* 2. VARIABLES & DATA */
 const gear=document.getElementById("gear")
 const settings=document.getElementById("settings")
+const settingsWrap=document.querySelector(".settings-wrap")
 const settingsMain=document.getElementById("settingsMain")
 const bg=document.getElementById("bg")
 const music=document.getElementById("bgMusic")
@@ -496,42 +565,46 @@ const sideButtons = document.querySelectorAll(".settings-side .settings-btn")
 const wallpapers=[
 {name:"S4turn V2", url:"https://raw.githubusercontent.com/xxuep/saturn/main/image.jpg"},
 {name:"S4turn V1", url:"https://raw.githubusercontent.com/xxuep/saturn/main/icons/og%20s4turn%20project%20s4turn%20wallpaper.jpg"},
-{name:"Just Saturn", url:"https://raw.githubusercontent.com/xxuep/saturn/main/icons/saturnotherwallpaper.jpg"},
+{name:"Saturn 4k", url:"https://raw.githubusercontent.com/xxuep/saturn/main/icons/saturnotherwallpaper.jpg"},
 {name:"Lizz", url:"https://raw.githubusercontent.com/xxuep/lizz/main/cool%20rog%20design%20ylk.gif"}
 ]
 
 const songs=[
 {name:"Space Ambience", url:"https://raw.githubusercontent.com/xxuep/saturn/main/music/10%20minute%20Space%20Ambient%20Music%20with%20Deep%20Relaxation%20%20Meditation%204K%20%20Space%20music%20%20Space%20Galaxy%20-%20Relaxing%20Music%20with%20a%20Beautiful%20View.mp3"},
 {name:"Odyssey's Trash", url:"https://raw.githubusercontent.com/xxuep/saturn/main/music/Odyssey's%20Trash.mp3"},
-{name:"Less Than Zero - Weeknd", url:"https://raw.githubusercontent.com/xxuep/saturn/main/music/The%20Weeknd%20-%20Less%20Than%20Zero%20(Audio)%20-%20TheWeekndVEVO.mp3"}
+{name:"Less Than Zero - Weeknd", url:"https://raw.githubusercontent.com/xxuep/saturn/main/music/The%20Weeknd%20-%20Less%20Than%20Zero%20(Audio)%20-%20TheWeekndVEVO.mp3"},
+{name:"Lofi Space", url:"https://files.catbox.moe/3w2n6u.mp3"}
 ]
-
-const fontOptions = [
-  { name: "S4turn V3", cssName: "Tiny5", family: "'Tiny5', sans-serif" },
-  { name: "S4turn V2", cssName: "Pixelify Sans", family: "'Pixelify Sans', sans-serif" },
-  { name: "S4turn V1", cssName: "Bungee", family: "'Bungee', cursive" },
-  { name: "Verdana", cssName: "Verdana", family: "Verdana, sans-serif" },
-  { name: "Georgia", cssName: "Georgia", family: "Georgia, serif" }
-];
 
 let panicOn=false
 let panicKeyObj={ctrl:false,shift:false,alt:false,key:"x"}
-let panicTab="https://google.com"
+let panicTab="https://clever.com"
 let listening=false
 let selectedWallpaperIndex=0
 let selectedSongIndex=0
-let currentFont="'Tiny5', sans-serif"
+let selectedTabIndex=0
+let currentFont="Tiny5, sans-serif"
 
-function openSettings(){ settings.classList.add("open"); page(0); }
-function closeSettings(){ settings.classList.remove("open"); }
-gear.onclick=()=>settings.classList.contains("open")?closeSettings():openSettings()
-settings.onclick=(e)=>{ if(e.target===settings) closeSettings(); }
+/* 3. SETTINGS UI LOGIC */
+function openSettings(){
+settings.classList.add("open")
+settings.setAttribute("aria-hidden","false")
+page(0)
+}
+function closeSettings(){
+settings.classList.remove("open")
+settings.setAttribute("aria-hidden","true")
+}
+gear.onclick=()=>settings.classList.contains("open") ? closeSettings() : openSettings()
+settings.addEventListener("click",e=>{
+if(e.target===settings) closeSettings()
+})
 
 sideButtons.forEach(btn=>{
-btn.onclick=()=>{
+btn.addEventListener("click",()=>{
 const p = Number(btn.getAttribute("data-page"))
 page(p)
-}
+})
 })
 
 function page(i){
@@ -542,38 +615,54 @@ if(i===2) settingsMain.innerHTML=renderPanic()
 if(i===3) settingsMain.innerHTML=renderFontSettings()
 }
 
+/* 4. RENDER FUNCTIONS */
+const fontOptions = [
+  { name: "S4turn V3", cssName: "Tiny5", family: "'Tiny5', sans-serif" },
+  { name: "S4turn V2", cssName: "Pixelify Sans", family: "'Pixelify Sans', sans-serif" },
+  { name: "S4turn V1", cssName: "Bungee", family: "'Bungee', cursive" },
+  { name: "Verdana", cssName: "Verdana", family: "Verdana, sans-serif" },
+  { name: "Georgia", cssName: "Georgia", family: "Georgia, serif" }
+];
+
 function renderFontSettings(){
-  let s = `<div style="display:flex;flex-direction:column;gap:12px"><div style="font-weight:700">Choose Font</div>`;
+  let s = `<div style="display:flex;flex-direction:column;gap:12px">
+    <div style="font-weight:700">Choose Font</div>`;
   fontOptions.forEach(f=>{
     const sel = f.family === currentFont ? "list-selected" : "";
-    s += `<div class="tab-choice ${sel}" onclick="setFont('${f.cssName}', '${f.family}')">${f.name}</div>`;
+    s += `<div class="tab-choice ${sel}" onclick="setFont('${f.cssName.replace(/'/g,'')}', '${escapeQuotes(f.family)}')">${f.name}</div>`;
   });
   s += `</div>`;
   return s;
 }
 
+function escapeQuotes(str){ return str.replace(/'/g,"\\'"); }
+
 function setFont(cssName, family){
   currentFont = family;
-  let existing = document.getElementById("fontOverride");
+  const styleId = "fontOverride";
+  let existing = document.getElementById(styleId);
   if(!existing){
     existing = document.createElement("style");
-    existing.id = "fontOverride";
+    existing.id = styleId;
     document.head.appendChild(existing);
   }
-  existing.textContent = `html, body, *, *::before, *::after, input, button { font-family: ${family} !important; }`;
+  existing.textContent = `html, body, *, *::before, *::after, input, button, textarea, select { font-family: ${family} !important; }`;
   page(3);
 }
 
 function renderWallpapers(){
 let s=`<div class="wall-list">`
 wallpapers.forEach((w,i)=>{
-const sel = i===selectedWallpaperIndex ? "list-selected" : ""
-s+=`<div class="wall-item ${sel}" onclick="selectWallpaper(${i})">
+const selectedClass = i===selectedWallpaperIndex ? "list-selected" : ""
+s+=`<div class="wall-item ${selectedClass}" onclick="selectWallpaper(${i})">
 <div style="display:flex;align-items:center;gap:12px">
-<div class="wall-thumb" style="background-image:url('${w.url}')"></div>
+<div class="wall-thumb" style="background-image:url('${w.url.replace(/'/g,"\\'")}')"></div>
+<div style="display:flex;flex-direction:column">
 <div style="font-weight:700">${w.name}</div>
+<div style="font-size:13px;opacity:.7">Preview</div>
 </div>
-<button class="assign-btn" onclick="applyWallpaper(event,${i})">Use</button>
+</div>
+<div><button class="assign-btn" onclick="applyWallpaper(event,${i})">Use</button></div>
 </div>`
 })
 s+=`</div>`
@@ -583,10 +672,15 @@ return s
 function renderSongs(){
 let s=`<div class="song-list">`
 songs.forEach((snd,i)=>{
-const sel = i===selectedSongIndex ? "list-selected" : ""
-s+=`<div class="song-item ${sel}">
+const selectedClass = i===selectedSongIndex ? "list-selected" : ""
+s+=`<div class="song-item ${selectedClass}">
+<div style="display:flex;align-items:center;gap:12px">
 <div style="font-weight:700">${snd.name}</div>
+</div>
+<div class="song-controls">
 <button class="assign-btn" onclick="setSong(event,${i})">Play</button>
+<button class="assign-btn" onclick="selectSong(${i})">Select</button>
+</div>
 </div>`
 })
 s+=`</div>`
@@ -594,45 +688,209 @@ return s
 }
 
 function renderPanic(){
-let chk = panicOn ? "custom-checkbox on" : "custom-checkbox"
+let checkedClass = panicOn ? "custom-checkbox on" : "custom-checkbox"
+let keyDisplay = formatKeyDisplay(panicKeyObj)
+let tabsHtml=""
+const tabs = [
+{label:"Clever", url:"https://clever.com"},
+{label:"Classroom", url:"https://google.classroom.com"},
+{label:"ixl", url:"https://ixl.com"},
+{label:"Google", url:"https://google.com"},
+{label:"Aleks", url:"https://aleks.com"}
+]
+tabs.forEach((t,i)=>{
+const sel = i===selectedTabIndex ? "list-selected" : ""
+tabsHtml+=`<div class="tab-choice ${sel}" onclick="chooseTab(${i})">${t.label}</div>`
+})
 let s=`<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;justify-content:space-between">
 <div style="display:flex;align-items:center;gap:12px">
-<div class="${chk}" onclick="togglePanic()"><div class="knob"></div></div>
-<div style="font-weight:700">Panic Switch</div>
+<div class="${checkedClass}" id="panicSwitch" onclick="togglePanic()"><div class="knob"></div></div>
+<div style="font-weight:700">Enable Panic</div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:flex-end">
+<div style="font-size:13px;opacity:.8">Current: <span id="panicOnLabel">${panicOn?"ON":"OFF"}</span></div>
+</div>
 </div>
 <div style="display:flex;gap:12px;align-items:center">
-<div class="key-display">${formatKeyDisplay(panicKeyObj)}</div>
-<button class="assign-btn" onclick="startCapture()">Assign</button>
+<div class="key-display" id="keyDisplay">${keyDisplay}</div>
+<button class="assign-btn" id="assignBtn" onclick="startCapture()">Assign</button>
+</div>
+<div style="display:flex;gap:12px;align-items:center">
+<div style="font-weight:700">Choose tab to open on panic</div>
+<div class="tab-choices">${tabsHtml}</div>
 </div>
 </div>`
 return s
 }
 
+/* 5. HELPER FUNCTIONS */
 function formatKeyDisplay(k){
-let p=[]; if(k.ctrl) p.push("Ctrl"); if(k.shift) p.push("Shift"); if(k.alt) p.push("Alt")
-if(k.key) p.push(k.key.toUpperCase()); return p.length?p.join("+"):"None";
+let parts=[]
+if(k.ctrl) parts.push("Ctrl")
+if(k.shift) parts.push("Shift")
+if(k.alt) parts.push("Alt")
+if(k.key) parts.push(k.key.toUpperCase())
+return parts.length===0 ? "None" : parts.join("+")
 }
 
-function selectWallpaper(i){ selectedWallpaperIndex=i; page(0); }
-function applyWallpaper(e,i){ e.stopPropagation(); bg.style.background=`url('${wallpapers[i].url}') center/110% no-repeat`; selectWallpaper(i); }
-function setSong(e,i){ e.stopPropagation(); music.src=songs[i].url; music.play(); selectedSongIndex=i; page(1); }
-function togglePanic(){ panicOn=!panicOn; page(2); }
-function startCapture(){ listening=true; captureOverlay.style.display="flex"; window.addEventListener("keydown",captureHandler); }
+function selectWallpaper(i){
+  selectedWallpaperIndex=i;
+  document.querySelectorAll(".wall-item").forEach((el,idx)=>el.classList.toggle("list-selected", idx===i));
+}
+
+function applyWallpaper(e,i){
+  e.stopPropagation();
+  const url = wallpapers[i].url;
+  bg.style.backgroundImage = `url("${url}")`;
+  selectWallpaper(i);
+}
+
+function setSong(e,i){
+  e.stopPropagation();
+  music.src=songs[i].url;
+  music.play();
+  selectedSongIndex=i;
+  updateMusicToggle(true);
+  document.querySelectorAll(".song-item").forEach((el,idx)=>el.classList.toggle("list-selected", idx===i))
+}
+
+function selectSong(i){
+  selectedSongIndex=i;
+  document.querySelectorAll(".song-item").forEach((el,idx)=>el.classList.toggle("list-selected", idx===i))
+}
+
+function togglePanic(){
+  panicOn=!panicOn;
+  document.getElementById("panicSwitch")?.classList.toggle("on",panicOn);
+  document.getElementById("panicOnLabel")&&(document.getElementById("panicOnLabel").textContent=panicOn?"ON":"OFF")
+}
+
+function chooseTab(i){
+  selectedTabIndex=i;
+  const urls=["https://clever.com","https://classroom.google.com","https://ixl.com","https://google.com", "https://aleks.com"];
+  panicTab=urls[i];
+  document.querySelectorAll(".tab-choice").forEach((el,idx)=>el.classList.toggle("list-selected", idx===i))
+}
+
+function startCapture(){ if(listening) return; listening=true; captureOverlay.style.display="flex"; window.addEventListener("keydown",captureHandler); }
 function cancelCapture(){ listening=false; captureOverlay.style.display="none"; window.removeEventListener("keydown",captureHandler); }
-function captureHandler(e){ e.preventDefault(); if(["Control","Shift","Alt"].includes(e.key)) return; 
-panicKeyObj={ctrl:e.ctrlKey,shift:e.shiftKey,alt:e.altKey,key:e.key.toLowerCase()}; cancelCapture(); page(2); }
 
-(function init(){
-  bg.style.background=`url('${wallpapers[0].url}') center/110% no-repeat`;
-  setFont('Tiny5', "'Tiny5', sans-serif");
-  page(0);
-})();
+function captureHandler(e){
+  e.preventDefault();
+  const allowed=["Control","Shift","Alt"];
+  if(allowed.includes(e.key)) return;
+  let k=e.key.toLowerCase();
+  panicKeyObj={ctrl:e.ctrlKey,shift:e.shiftKey,alt:e.altKey,key:k};
+  document.getElementById("keyDisplay")&&(document.getElementById("keyDisplay").textContent=formatKeyDisplay(panicKeyObj));
+  listening=false;
+  captureOverlay.style.display="none";
+  window.removeEventListener("keydown",captureHandler);
+}
 
+function updateMusicToggle(p){
+  if(p){ musicToggleBtn.classList.add("playing"); musicToggleBtn.textContent="⏸" }
+  else{ musicToggleBtn.classList.remove("playing"); musicToggleBtn.textContent="♪" }
+}
+
+function applyInitials(){
+  const url = wallpapers[selectedWallpaperIndex]?.url || wallpapers[0].url;
+  bg.style.backgroundImage = `url("${url}")`;
+  music.src = songs[0].url;
+  music.pause();
+  const styleId = "fontOverride";
+  let existing = document.getElementById(styleId) || document.createElement("style");
+  existing.id = styleId;
+  document.head.appendChild(existing);
+  existing.textContent = `html, body, *, *::before, *::after, input, button, textarea, select { font-family: ${currentFont} !important; }`;
+}
+
+applyInitials();
+page(0);
+
+/* 6. PANIC KEY LISTENER */
 document.addEventListener("keydown",e=>{
-if(panicOn && (e.ctrlKey===!!panicKeyObj.ctrl)&&(e.shiftKey===!!panicKeyObj.shift)&&(e.altKey===!!panicKeyObj.alt)&&(e.key.toLowerCase()===panicKeyObj.key)) window.open(panicTab,"_blank");
-})
+  if(!panicOn) return;
+  let w=panicKeyObj;
+  if((e.ctrlKey===!!w.ctrl)&&(e.shiftKey===!!w.shift)&&(e.altKey===!!w.alt)&&(e.key.toLowerCase()===w.key)) window.open(panicTab,"_blank")
+});
 
-musicToggleBtn.onclick=()=>{if(music.paused){music.play(); musicToggleBtn.classList.add("playing")}else{music.pause(); musicToggleBtn.classList.remove("playing")}}
+musicToggleBtn.onclick=()=>{
+  if(music.paused){music.play();updateMusicToggle(true)}
+  else{music.pause();updateMusicToggle(false)}
+}
+
+/* 7. ENCODED SEARCH LOGIC (about:blank + iframe + overlapping black bar) */
+(function () {
+  const input = document.getElementById("mainSearchInput");
+  const btn = document.getElementById("searchBtn");
+  if (!input || !btn) return;
+
+  function b64(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+
+  function handleSearch() {
+    let raw = input.value.trim();
+    if (!raw) return;
+
+    let targetUrl;
+    if (raw.includes('.') && !raw.includes(' ')) {
+      targetUrl = raw.startsWith('http') ? raw : 'https://' + raw;
+    } else {
+      targetUrl = "https://www.google.com/search?q=" + encodeURIComponent(raw);
+    }
+
+    const encoded = b64(targetUrl);
+    const proxyFinal = "https://allthelove.bfcontrol.com.mx/render.html?url=" + encoded;
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+<style>
+html,body{ margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:black; }
+#topbar{ 
+    position:fixed; 
+    top:0; 
+    left:0; 
+    width:100%; 
+    height:48px; 
+    background:black; 
+    z-index:9999; 
+    pointer-events: none; /* Allows clicks to pass through to iframe if desired, or remove to block them */
+}
+iframe{ 
+    position:absolute; 
+    top:0; /* Starts at top underneath the bar */
+    left:0; 
+    width:100%; 
+    height:100%; /* Full screen */
+    border:none; 
+}
+</style>
+</head>
+<body>
+<div id="topbar"></div>
+<iframe src="${proxyFinal}"></iframe>
+</body>
+</html>`;
+
+    const w = window.open("about:blank", "_blank");
+    if (w) {
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+    } else {
+      alert("Popup blocked! Please allow popups to use the search.");
+    }
+  }
+
+  btn.onclick = handleSearch;
+  input.onkeydown = (e) => { if(e.key === 'Enter') handleSearch(); };
+})();
 </script>
+
 </body>
 </html>
