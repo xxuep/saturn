@@ -117,13 +117,6 @@
 </head>
 <body class="text-white h-screen overflow-hidden select-none">
 
-    <canvas id="starfield" class="fixed inset-0 pointer-events-none z-0"></canvas>
-
-    <div class="saturn-container" id="home-saturn">
-        <div class="ring-part ring-back"></div>
-        <div class="planet"></div>
-        <div class="ring-part ring-front"></div>
-    </div>
 
     <!-- UI Overlay (Left Sidebar) -->
     <button onclick="toggleSidebar()" class="fixed top-6 left-6 z-50 p-3 rounded-full bg-slate-900/80 border border-white/10 hover:border-cyan-500/50 transition-all">
@@ -155,11 +148,11 @@
             <div id="page-appearance" class="settings-page">
                 <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-500 mb-6 block">Wallpapers</label>
                 <div class="space-y-4 mb-8">
-                    <button onclick="setWallpaper('color', '#020617')" class="wallpaper-btn bg-[#020617] active">
-                        <span class="text-[9px] font-bold tracking-widest uppercase opacity-50">Deep Space</span>
+                    <button onclick="setWallpaper('image', 'https://images.unsplash.com/photo-1627556592933-ffe99c1cd9eb?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" class="wallpaper-btn bg-[url('https://images.unsplash.com/photo-1627556592933-ffe99c1cd9eb?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')] bg-cover bg-center">
+                        <div class="wallpaper-overlay"><span class="text-[9px] font-bold tracking-widest uppercase">Default</span></div>
                     </button>
-                    <button onclick="setWallpaper('image', 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2070&auto=format&fit=crop')" class="wallpaper-btn bg-[url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center">
-                        <div class="wallpaper-overlay"><span class="text-[9px] font-bold tracking-widest uppercase">Nova</span></div>
+                    <button onclick="setWallpaper('image', 'https://images.unsplash.com/photo-1701486485363-9d328ff5758a?q=80&w=1228&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" class="wallpaper-btn bg-[url('https://images.unsplash.com/photo-1701486485363-9d328ff5758a?q=80&w=1228&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')] bg-cover bg-center">
+                        <div class="wallpaper-overlay"><span class="text-[9px] font-bold tracking-widest uppercase">Saturn</span></div>
                     </button>
                     <button onclick="setWallpaper('image', 'https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?q=80&w=2072&auto=format&fit=crop')" class="wallpaper-btn bg-[url('https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?q=80&w=2072&auto=format&fit=crop')] bg-cover bg-center">
                         <div class="wallpaper-overlay"><span class="text-[9px] font-bold tracking-widest uppercase">Ecliptic</span></div>
@@ -217,7 +210,7 @@
     <main id="main-content" class="relative z-10 h-full pt-20 overflow-y-auto px-6 lg:px-24">
         <div id="view-home" class="h-full flex flex-col items-center justify-center text-center">
             <h1 class="text-6xl md:text-8xl font-bold tracking-tighter text-gradient mb-4">S4turn</h1>
-            <div id="status-text" class="text-slate-400 text-sm md:text-lg uppercase tracking-[0.4em] font-medium fade-in-out h-8">hey wsp yall</div>
+            <div id="status-text" class="text-slate-400 text-sm md:text-lg uppercase tracking-[0.4em] font-medium fade-in-out h-8">the new and improved.</div>
         </div>
 
         <div id="view-library" class="hidden pb-20">
@@ -241,14 +234,44 @@
     </main>
 
     <!-- Game Modal -->
-    <div id="gameModal" class="fixed inset-0 z-[60] bg-black flex items-center justify-center">
-        <div id="modalContent" class="modal-content">
-            <div class="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-white/10 shrink-0">
-                <span id="modalTitle" class="text-xs uppercase tracking-widest text-slate-400 font-medium">SIMULATION ACTIVE</span>
-                <button onclick="closeGame()" class="bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white p-1 rounded transition-all">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+<div id="gameModal" class="fixed inset-0 z-[60] bg-black flex items-center justify-center">
+    <div id="modalContent" class="modal-content">
+        
+        <!-- Top Bar -->
+        <div class="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-white/10 shrink-0">
+            <span id="modalTitle" class="text-xs uppercase tracking-widest text-slate-400 font-medium">
+                SIMULATION ACTIVE
+            </span>
+
+            <div class="flex items-center gap-2">
+                <!-- Expand Button -->
+                <button onclick="toggleImmersive()"
+                    class="bg-cyan-500/20 hover:bg-cyan-500 text-cyan-400 hover:text-black p-1 rounded transition-all"
+                    title="Toggle Fullscreen">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4"/>
+                    </svg>
+                </button>
+
+                <!-- Close Button -->
+                <button onclick="closeGame()"
+                    class="bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white p-1 rounded transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
                 </button>
             </div>
+        </div>
+
+        <!-- Game Content -->
+        <div id="iframeWrapper" class="flex-1 bg-black overflow-hidden relative"></div>
+    </div>
+</div>
+
+
+            
             <div id="iframeWrapper" class="flex-1 bg-black overflow-hidden relative"></div>
         </div>
     </div>
@@ -291,6 +314,21 @@
             localStorage.setItem('s4_panicUrl', panicUrl);
         }
 
+        const DEFAULT_WALLPAPER = {
+    type: 'image',
+    val: 'https://images.unsplash.com/photo-1627556592933-ffe99c1cd9eb?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+};
+
+const savedWP = localStorage.getItem('s4_wallpaper');
+
+if (savedWP) {
+    const { type, val } = JSON.parse(savedWP);
+    setWallpaper(type, val);
+} else {
+    setWallpaper(DEFAULT_WALLPAPER.type, DEFAULT_WALLPAPER.val);
+}
+
+
         function assignPanicKey() {
             const btn = document.getElementById('keybindBtn');
             btn.innerText = "CAPTURING COMBO...";
@@ -309,6 +347,12 @@
             };
             window.addEventListener('keydown', listener);
         }
+
+function toggleImmersive() {
+    const modalContent = document.getElementById('modalContent');
+    modalContent.classList.toggle('immersive');
+}
+
 
         function updatePanicDisplay() {
             let label = [];
@@ -338,22 +382,30 @@
         }
 
         function setView(view) {
-            if (view === currentView) return;
-            if (currentView === 'soundboard') destroyView('soundboard-container');
-            if (currentView === 'proxy') destroyView('proxy-container');
+    if (view === currentView) return;
 
-            document.getElementById(`view-${currentView}`).classList.add('hidden');
-            document.getElementById(`nav-${currentView}`).classList.remove('active-nav');
-            document.getElementById(`view-${view}`).classList.remove('hidden');
-            document.getElementById(`nav-${view}`).classList.add('active-nav');
-            
-            if (view === 'soundboard') loadDynamicView(SOUNDBOARD_URL, 'soundboard-container', 'soundboard-loader-ui');
-            if (view === 'proxy') loadDynamicView(PROXY_URL, 'proxy-container', 'proxy-loader-ui');
-            
-            document.getElementById('home-saturn').style.opacity = (view === 'home' ? '1' : '0.1');
-            currentView = view;
-            if (isSidebarOpen) toggleSidebar();
-        }
+    if (currentView === 'soundboard') destroyView('soundboard-container');
+    if (currentView === 'proxy') destroyView('proxy-container');
+
+    document.getElementById(`view-${currentView}`).classList.add('hidden');
+    document.getElementById(`nav-${currentView}`).classList.remove('active-nav');
+
+    document.getElementById(`view-${view}`).classList.remove('hidden');
+    document.getElementById(`nav-${view}`).classList.add('active-nav');
+
+    if (view === 'soundboard') loadDynamicView(SOUNDBOARD_URL, 'soundboard-container', 'soundboard-loader-ui');
+    if (view === 'proxy') loadDynamicView(PROXY_URL, 'proxy-container', 'proxy-loader-ui');
+
+    // ✅ SAFE check (THIS FIXES EVERYTHING)
+    const homeSaturn = document.getElementById('home-saturn');
+    if (homeSaturn) {
+        homeSaturn.style.opacity = (view === 'home' ? '1' : '0.1');
+    }
+
+    currentView = view;
+    if (isSidebarOpen) toggleSidebar();
+}
+
 
         async function loadDynamicView(url, containerId, loaderId) {
             const container = document.getElementById(containerId);
@@ -455,6 +507,7 @@
     { title: 'Slope', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/slope.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/slopepeppee.jpeg' },
     { title: 'Slow Roads', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/slowroads.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/slow-roads.jpg' },
     { title: 'Snow Rider', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/snowrider.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/snowriderrss.jpeg' },
+    { title: 'Soccer Random', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/soccerrandom.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/soccerrandom.jpeg' },
     { title: 'Stick Man Hook', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/stickmanhook.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/stick-hook-game1.png' },
     { title: 'Super Hot', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/superhot.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/superhot.jpeg' },
     { title: 'Tag', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/tag.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/tag-online.png' },
@@ -462,8 +515,23 @@
     { title: 'Time Shooter 2', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/timeshooter2.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/timeshooter2.jpeg' },
     { title: 'Time Shooter 3', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/timeshooter3.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/timeshooter3.jpeg' },
     { title: 'Tiny Fishing', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/tinyfishing.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/tinyfishing.jpg' },
-    { title: 'Tomb of the Mask', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/tombofthemask.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/tombofthemask.png' }
+    { title: 'Tomb of the Mask', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/tombofthemask.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/tombofthemask.png' },
+    { title: 'Vex 4', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/vex4.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/vex4.jpeg' },
+    { title: 'Vex 5', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/vex5.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/vex5.jpeg' },
+    { title: 'Vex 6', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/vex6.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/vex6.jpeg' },
+    { title: 'Vex 7', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/vex7.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/vex7.jpeg' },
+    { title: 'Vex 8', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/vex8.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/vex8.jpeg' },
+    { title: 'Volley Random', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/volleyrandom.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/volleyrandom.jpeg' },
+    { title: 'Wheely', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/wheely.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/wheely1.jpeg' },
+    { title: 'Wheely 2', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/wheely2.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/wheely2.jpeg' },
+    { title: 'Wheely 3', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/wheely3.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/wheely3.jpeg' },
+    { title: 'Wheely 4', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/wheely4.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/wheely4.jpeg' },
+    { title: 'Wheely 5', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/wheely5.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/wheely5.jpeg' },
+    { title: 'Wheely 6', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/wheely6.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/wheely6.jpg' },
+    { title: 'Wheely 7', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/wheely7.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/wheely7.jpg' },
+    { title: 'Wheely 8', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/wheely8.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/wheely8.jpg' }
 ];
+
 
         let isSidebarOpen = false;
         function toggleSidebar() {
