@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S4turn OS v2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Fredoka', sans-serif; background-color: #020617; background-size: cover; background-position: center; background-attachment: fixed; transition: background 0.5s ease; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        
+        .saturn-container {
+            position: absolute;
+            top: 25%;
+            right: 15%;
+            width: 200px;
+            height: 200px;
+            pointer-events: none;
+            transform: rotate(15deg); 
+            animation: floatSaturn 15s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            transition: opacity 0.5s ease;
+        }
+        @keyframes floatSaturn {
+            0%, 100% { transform: rotate(15deg) translateY(0); }
+            50% { transform: rotate(15deg) translateY(-30px); }
+        }
+        .planet {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #e2c08d, #ad8556, #2d1e11);
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.8), 0 0 30px rgba(226, 192, 141, 0.2);
+            z-index: 2;
+            position: relative;
+        }
+        .ring-part {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 240px;
+            height: 60px;
+            border-radius: 50%;
+            border: 15px solid rgba(199, 178, 144, 0.6);
+            transform: translate(-50%, -50%);
+        }
+        .ring-back { z-index: 1; clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%); }
+        .ring-front { z-index: 3; clip-path: polygon(0 45%, 100% 45%, 100% 100%, 0 100%); }
+
+        .sidebar-glass {
+            background: rgba(2, 6, 23, 0.9);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .settings-panel {
+            background: rgba(2, 6, 23, 0.98);
+            backdrop-filter: blur(24px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .settings-panel.active { transform: translateX(0); }
+
+        .tab-btn.active {
+            color: #22d3ee;
+            border-bottom: 2px solid #22d3ee;
+        }
+
+        .active-nav {
+            background: rgba(34, 211, 238, 0.1);
+            color: #22d3ee;
+            border-left: 3px solid #06b6d4;
+        }
+
+        .game-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .game-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(34, 211, 238, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(6, 182, 212, 0.3);
+            z-index: 10;
+        }
+
+        #gameModal { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        #gameModal.active { display: flex; opacity: 1; }
+        .modal-content {
+            width: 90%; height: 85%; max-width: 1200px;
+            background: #000; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-content.immersive { width: 100vw !important; height: 100vh !important; max-width: none !important; border-radius: 0 !important; border: none !important; }
+        
+        iframe { width: 100%; height: 100%; border: none; background: #000; }
+        .text-gradient { background: linear-gradient(to right, #22d3ee, #818cf8, #e879f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .fade-in-out { transition: opacity 0.8s ease-in-out; }
+
+        .wallpaper-btn {
+            width: 100%; height: 80px; border-radius: 12px;
+            border: 2px solid transparent; cursor: pointer;
+            transition: all 0.2s; position: relative; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .wallpaper-btn:hover { border-color: rgba(34, 211, 238, 0.5); transform: scale(1.02); }
+        .wallpaper-btn.active { border-color: #22d3ee; }
+        .wallpaper-overlay { background: rgba(0,0,0,0.4); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body class="text-white h-screen overflow-hidden select-none">
+
+    <canvas id="starfield" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <div class="saturn-container" id="home-saturn">
+        <div class="ring-part ring-back"></div>
+        <div class="planet"></div>
+        <div class="ring-part ring-front"></div>
+    </div>
+
+    <!-- UI Overlay (Left Sidebar) -->
+    <button onclick="toggleSidebar()" class="fixed top-6 left-6 z-50 p-3 rounded-full bg-slate-900/80 border border-white/10 hover:border-cyan-500/50 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+    </button>
+
+    <!-- UI Overlay (Right Settings) -->
+    <button onclick="toggleSettings()" class="fixed top-6 right-6 z-50 p-3 rounded-full bg-slate-900/80 border border-white/10 hover:border-violet-500/50 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-400 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+    </button>
+
+    <!-- Settings Sidebar -->
+    <aside id="settingsPanel" class="fixed top-0 right-0 h-full w-96 settings-panel z-[55] flex flex-col">
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+            <h2 class="text-xs font-bold tracking-[0.3em] text-white uppercase">System Settings</h2>
+            <button onclick="toggleSettings()" class="p-2 hover:bg-white/5 rounded-full transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+
+        <div class="flex px-6 pt-4 border-b border-white/10 space-x-6">
+            <button onclick="switchSettingsTab('appearance')" id="tab-appearance" class="tab-btn active pb-3 text-[10px] font-bold uppercase tracking-widest transition-all">Appearance</button>
+            <button onclick="switchSettingsTab('panic')" id="tab-panic" class="tab-btn pb-3 text-[10px] font-bold uppercase tracking-widest transition-all">Panic Button</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-8">
+            <div id="page-appearance" class="settings-page">
+                <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-500 mb-6 block">Wallpapers</label>
+                <div class="space-y-4 mb-8">
+                    <button onclick="setWallpaper('color', '#020617')" class="wallpaper-btn bg-[#020617] active">
+                        <span class="text-[9px] font-bold tracking-widest uppercase opacity-50">Deep Space</span>
+                    </button>
+                    <button onclick="setWallpaper('image', 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2070&auto=format&fit=crop')" class="wallpaper-btn bg-[url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center">
+                        <div class="wallpaper-overlay"><span class="text-[9px] font-bold tracking-widest uppercase">Nova</span></div>
+                    </button>
+                    <button onclick="setWallpaper('image', 'https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?q=80&w=2072&auto=format&fit=crop')" class="wallpaper-btn bg-[url('https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?q=80&w=2072&auto=format&fit=crop')] bg-cover bg-center">
+                        <div class="wallpaper-overlay"><span class="text-[9px] font-bold tracking-widest uppercase">Ecliptic</span></div>
+                    </button>
+                </div>
+                <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                    <span class="text-[9px] font-bold text-slate-400 mb-3 block uppercase tracking-widest">Custom Wallpaper URL</span>
+                    <input type="text" id="customWallpaper" placeholder="https://..." class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-cyan-500 transition-all mb-3 text-cyan-200">
+                    <button onclick="applyCustomWallpaper()" class="w-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-[10px] font-bold uppercase tracking-widest py-2 rounded-lg transition-all">Set Custom</button>
+                </div>
+            </div>
+
+            <div id="page-panic" class="settings-page hidden">
+                <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-red-500 mb-6 block">Panic</label>
+                <div class="space-y-6">
+                    <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                        <span class="text-[9px] font-bold text-slate-400 mb-3 block uppercase tracking-widest">Redirect URL</span>
+                        <input type="text" id="panicLink" placeholder="https://google.com" onchange="savePanicSettings()" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-red-500 transition-all text-red-200">
+                    </div>
+                    <div class="p-4 rounded-xl bg-white/5 border border-white/5">
+                        <span class="text-[9px] font-bold text-slate-400 mb-3 block uppercase tracking-widest">Global Shortcut</span>
+                        <button id="keybindBtn" onclick="assignPanicKey()" class="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-[0.2em] py-4 rounded-lg border border-red-500/20 transition-all">
+                            CLICK TO REBIND
+                        </button>
+                        <p class="text-[9px] text-slate-500 mt-4 text-center">Active Combo: <br><span id="currentKey" class="text-white font-mono text-xs bg-white/5 px-2 py-1 rounded inline-block mt-2">None</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 sidebar-glass -translate-x-full transition-transform duration-300 z-40 flex flex-col pt-20">
+        <nav class="flex-1 px-4 space-y-2">
+            <button onclick="setView('home')" id="nav-home" class="active-nav w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                <span>Home</span>
+            </button>
+            <button onclick="setView('library')" id="nav-library" class="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                <span>Games</span>
+            </button>
+            <button onclick="setView('soundboard')" id="nav-soundboard" class="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
+                <span>Soundboard</span>
+            </button>
+            <button onclick="setView('proxy')" id="nav-proxy" class="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-3.632A9.959 9.959 0 013 12c0-5.523 4.477-10 10-10s10 4.477 10 10a9.959 9.959 0 01-2.807 7.032m-3.333-12.834A2.25 2.25 0 0113.5 3c.621 0 1.125.504 1.125 1.125s-.504 1.125-1.125 1.125-1.125-.504-1.125-1.125z" /></svg>
+                <span>Proxy</span>
+            </button>
+        </nav>
+        <div class="p-6 text-[10px] text-center text-slate-500 tracking-[0.3em] font-bold uppercase">S4turn OS v2</div>
+    </aside>
+
+    <main id="main-content" class="relative z-10 h-full pt-20 overflow-y-auto px-6 lg:px-24">
+        <div id="view-home" class="h-full flex flex-col items-center justify-center text-center">
+            <h1 class="text-6xl md:text-8xl font-bold tracking-tighter text-gradient mb-4">S4turn</h1>
+            <div id="status-text" class="text-slate-400 text-sm md:text-lg uppercase tracking-[0.4em] font-medium fade-in-out h-8">hey wsp yall</div>
+        </div>
+
+        <div id="view-library" class="hidden pb-20">
+            <h1 class="text-2xl font-light mb-8 tracking-[0.3em] text-slate-400 uppercase border-b border-white/5 pb-4">Library</h1>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="gameGrid"></div>
+        </div>
+
+        <div id="view-soundboard" class="hidden h-[calc(100%-80px)] w-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 backdrop-blur-md relative">
+            <div id="soundboard-loader-ui" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-20 hidden">
+                <div class="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <div id="soundboard-container" class="w-full h-full"></div>
+        </div>
+
+        <div id="view-proxy" class="hidden h-[calc(100%-80px)] w-full rounded-2xl overflow-hidden border border-white/10 bg-black/40 backdrop-blur-md relative">
+            <div id="proxy-loader-ui" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-20 hidden">
+                <div class="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <div id="proxy-container" class="w-full h-full"></div>
+        </div>
+    </main>
+
+    <!-- Game Modal -->
+    <div id="gameModal" class="fixed inset-0 z-[60] bg-black flex items-center justify-center">
+        <div id="modalContent" class="modal-content">
+            <div class="flex items-center justify-between px-4 py-2 bg-slate-900 border-b border-white/10 shrink-0">
+                <span id="modalTitle" class="text-xs uppercase tracking-widest text-slate-400 font-medium">SIMULATION ACTIVE</span>
+                <button onclick="closeGame()" class="bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white p-1 rounded transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="iframeWrapper" class="flex-1 bg-black overflow-hidden relative"></div>
+        </div>
+    </div>
+
+    <script>
+        const SOUNDBOARD_URL = "https://raw.githubusercontent.com/xxuep/games/main/web/soundboard.html"; 
+        const PROXY_URL = "https://raw.githubusercontent.com/xxuep/saturn/main/site/wip/button-tester3.html"; 
+
+        let currentView = 'home';
+        let panicCombo = JSON.parse(localStorage.getItem('s4_panicCombo')) || { ctrl: false, shift: false, alt: false, key: 'p' };
+        let panicUrl = localStorage.getItem('s4_panicUrl') || 'https://google.com';
+
+        // --- Settings Logic ---
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('active');
+            if (isSidebarOpen) toggleSidebar();
+        }
+
+        function switchSettingsTab(tab) {
+            document.querySelectorAll('.settings-page').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`page-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        function setWallpaper(type, val) {
+            document.body.style.backgroundImage = type === 'image' ? `url('${val}')` : 'none';
+            document.body.style.backgroundColor = type === 'color' ? val : 'transparent';
+            localStorage.setItem('s4_wallpaper', JSON.stringify({type, val}));
+        }
+
+        function applyCustomWallpaper() {
+            const url = document.getElementById('customWallpaper').value;
+            if (url) setWallpaper('image', url);
+        }
+
+        function savePanicSettings() {
+            panicUrl = document.getElementById('panicLink').value;
+            localStorage.setItem('s4_panicUrl', panicUrl);
+        }
+
+        function assignPanicKey() {
+            const btn = document.getElementById('keybindBtn');
+            btn.innerText = "CAPTURING COMBO...";
+            btn.classList.add('animate-pulse');
+            
+            const listener = (e) => {
+                e.preventDefault();
+                if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) return;
+                panicCombo = { ctrl: e.ctrlKey, shift: e.shiftKey, alt: e.altKey, key: e.key.toLowerCase() };
+                localStorage.setItem('s4_panicCombo', JSON.stringify(panicCombo));
+                updatePanicDisplay();
+                btn.innerText = "BOUND!";
+                btn.classList.remove('animate-pulse');
+                window.removeEventListener('keydown', listener);
+                setTimeout(() => btn.innerText = "CLICK TO REBIND", 2000);
+            };
+            window.addEventListener('keydown', listener);
+        }
+
+        function updatePanicDisplay() {
+            let label = [];
+            if (panicCombo.ctrl) label.push('Ctrl');
+            if (panicCombo.shift) label.push('Shift');
+            if (panicCombo.alt) label.push('Alt');
+            label.push(panicCombo.key.toUpperCase());
+            document.getElementById('currentKey').innerText = label.join(' + ');
+        }
+
+        // --- Global Listeners ---
+        window.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === panicCombo.key && e.ctrlKey === panicCombo.ctrl && e.shiftKey === panicCombo.shift && e.altKey === panicCombo.alt) {
+                window.open(panicUrl, '_blank');
+            }
+        });
+
+        // --- Core OS Logic ---
+        async function fetchAndRender(url, iframe) {
+            try {
+                const response = await fetch(url);
+                let html = await response.text();
+                const baseUrl = url.substring(0, url.lastIndexOf("/") + 1);
+                html = html.includes("<head>") ? html.replace("<head>", `<head><base href="${baseUrl}">`) : `<base href="${baseUrl}">` + html;
+                iframe.srcdoc = html;
+            } catch (err) { console.error("Error:", err); }
+        }
+
+        function setView(view) {
+            if (view === currentView) return;
+            if (currentView === 'soundboard') destroyView('soundboard-container');
+            if (currentView === 'proxy') destroyView('proxy-container');
+
+            document.getElementById(`view-${currentView}`).classList.add('hidden');
+            document.getElementById(`nav-${currentView}`).classList.remove('active-nav');
+            document.getElementById(`view-${view}`).classList.remove('hidden');
+            document.getElementById(`nav-${view}`).classList.add('active-nav');
+            
+            if (view === 'soundboard') loadDynamicView(SOUNDBOARD_URL, 'soundboard-container', 'soundboard-loader-ui');
+            if (view === 'proxy') loadDynamicView(PROXY_URL, 'proxy-container', 'proxy-loader-ui');
+            
+            document.getElementById('home-saturn').style.opacity = (view === 'home' ? '1' : '0.1');
+            currentView = view;
+            if (isSidebarOpen) toggleSidebar();
+        }
+
+        async function loadDynamicView(url, containerId, loaderId) {
+            const container = document.getElementById(containerId);
+            const loader = document.getElementById(loaderId);
+            loader.classList.remove('hidden');
+            container.innerHTML = `<iframe class="w-full h-full"></iframe>`;
+            await fetchAndRender(url, container.querySelector('iframe'));
+            loader.classList.add('hidden');
+        }
+
+        function destroyView(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        async function launchGame(url, title) {
+            const modal = document.getElementById('gameModal');
+            document.getElementById('modalTitle').innerText = title;
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+            const wrapper = document.getElementById('iframeWrapper');
+            wrapper.innerHTML = `<iframe allow="autoplay; fullscreen; keyboard; gamepad" sandbox="allow-scripts allow-same-origin"></iframe>`;
+            fetchAndRender(url, wrapper.querySelector('iframe'));
+        }
+
+        function closeGame() {
+            const modal = document.getElementById('gameModal');
+            modal.classList.remove('active');
+            setTimeout(() => { modal.style.display = 'none'; document.getElementById('iframeWrapper').innerHTML = ''; }, 300);
+        }
+
+        const GAMES = [
+    { title: '10 Minutes Till Dawn', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/10minutestilldawn.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/10-minutes-till-dawn_1x1.jpeg' },
+    { title: '12 Mini Battles', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/12minibattles.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/12minibattles.png' },
+    { title: '1 on 1 Soccer', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/1on1soccer.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/1-on-1-soccer.jpg' },
+    { title: '1 on 1 Tennis', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/1on1tennis.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/1on1tennis.jpg' },
+    { title: '1v1.LOL', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/1v1.lol.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/1v1%20loo.jpeg' },
+    { title: '2048', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/2048.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/2048logo.jpeg' },
+    { title: '3d Flight Simulator', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/3Dflightsimulator.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/3dflight.jpeg' },
+    { title: 'Agar.io Lite', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/agariolite.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/agario.png' },
+    { title: 'Age of War', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/ageofwar.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/ageofwar.jpeg' },
+    { title: 'Age of War 2', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/ageofwar2.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/ageofwar2.jpg' },
+    { title: 'Ages of Conflict', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/agesofconflict.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/ages%20of%20conflict.png' },
+    { title: 'Among Us', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/amongus.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/amongssusss.png' },
+    { title: 'Angry Birds', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/angrybirds.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/angybirds.jpg' },
+    { title: 'Awesome Tanks', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/awesometanks.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/awesome-tanks-game-icon.png' },
+    { title: 'Awesome Tanks 2', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/awesometanks2.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/awesome-tanks-2-icon.png' },
+    { title: 'Backrooms', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/backrooms.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/horror/backroooooooooooooooomsss.jpg' },
+    { title: 'Bacon May Die', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/baconmaydie.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/baconmaydieeee.jpeg' },
+    { title: 'Bad Parenting', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/badparenting.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/horror/image_2025-12-13_193351410.png' },
+    { title: "Baldi's Basics", url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/baldisbasics.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/baldis%20basif.jpg' },
+    { title: 'Baseball Bros', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/baseballbros.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/baseballbross.jpg' },
+    { title: 'Basketball Legends', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/basketballlegends.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/basketball-legends-2020.jpg' },
+    { title: 'Basketball Stars', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/basketballstars.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/basketball-stars1-m240x240.jpg' },
+    { title: 'Basket Bros', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/basketbros.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/basket-bros.jpg' },
+    { title: 'Basket Random', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/basketrandom.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/basket-random_16x9-cover.png' },
+    { title: 'Battle Cats (truffled is down)', url: 'https://raw.githubusercontent.com/xxuep/games/main/truffled/battlecats.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/battlecats.jpg' },
+    { title: 'Bitlife', url: 'https://raw.githubusercontent.com/xxuep/games/main/bitlife.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/bitlfieee.png' },
+    { title: 'Bow Masters', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/bowmasters.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/bowmasterssss.jpeg' },
+    { title: 'Boxing Random', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/boxingrandom.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/boxing-random_1x1.jpeg' },
+    { title: 'Candy Crush', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/candycrush.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/candy%20cruhsss.jpeg' },
+    { title: 'Clash of Clans (truffled is down)', url: 'https://raw.githubusercontent.com/xxuep/games/main/truffled/clashofclans.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/clashofclans.jpeg' },
+    { title: 'Clash Royale (truffled is down)', url: 'https://raw.githubusercontent.com/xxuep/games/main/truffled/clashroyale.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/clashroyale.jpeg' },
+    { title: 'Cookie Clicker', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/cookieclicker.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/cookieclickerlogoyk.jpg' },
+    { title: 'Crazy Cattle 3D', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/crazycattle3D.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/crazy-cattle-game.jpeg' },
+    { title: 'Crossy Road', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/crossyroad.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/crossyroaddd.jpg' },
+    { title: 'Drift Boss', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/driftboss.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/diftbosssssssss.jpeg' },
+    { title: 'Drive Mad', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/drivemad.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/drivemaddddddddd.jpeg' },
+    { title: 'Escape Road', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/escaperoad.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/escapppre5r6tfujk.jpeg' },
+    { title: 'Escape Road 2', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/escaperoad2.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/escapeppridoaoaod2222.jpeg' },
+    { title: 'Flappy Bird', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/flappybird.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/flappyboirdd.jpeg' },
+    { title: 'FNAF 1', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/fnaf.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/fnannfnfn1111.jpeg' },
+    { title: 'FNAF 2', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/fnaf2.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/fnaf2222222.jpeg' },
+    { title: 'FNAF 3', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/fnaf3.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/fnaffffffff3.jpeg' },
+    { title: 'FNAF 4', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/fnaf4.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/fnafaffafafff44444.jpeg' },
+    { title: 'FNAF 5', url: 'https://raw.githubusercontent.com/xxuep/games/main/fnaf/fnaf5.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/fnaf/fnaf55555555555.png' },
+    { title: 'FNAF 6', url: 'https://raw.githubusercontent.com/xxuep/games/main/fnaf/fnaf6.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/fnaf/fnaf666666666.jpg' },
+    { title: 'FNAF UCN', url: 'https://raw.githubusercontent.com/xxuep/games/main/fnaf/fnafucn1.html'
+, img: 'https://raw.githubusercontent.com/xxuep/games/main/fnaf/fnafucn.jpeg' },
+    { title: 'FNAF World', url: 'https://raw.githubusercontent.com/xxuep/games/main/fnaf/fnafworld1.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/fnaf/fnafworld.jpeg' },
+    { title: 'Football Bros', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/footballbros.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/footballbross.jpeg' },
+    { title: 'Football Legends', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/footballlegends.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/footballlegendss.jpeg' },
+    { title: 'Fruit Ninja', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/fruitninja.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/fruitititititninjjajaa.jpeg' },
+    { title: 'Geometry Dash', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/geometrydash.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/geometrydashhshshs.jpeg' },
+    { title: 'Granny', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/granny.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/grannyy.jpeg' },
+    { title: 'Granny 2', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/granny2.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/granny22.jpeg' },
+    { title: 'Happy Wheels', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/happywheels.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/haopyweehsl.jpeg' },
+    { title: 'Hole.io', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/holeio.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/holeeee.iuoooooo.jpeg' },
+    { title: 'Johnny Trigger', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/johnnytrigger.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/johhhnynynynyntighg].jpeg' },
+    { title: 'Level Devil', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/leveldevil.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/leveleleldeviil.jpeg' },
+    { title: 'Melon Playground', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/melonplayground.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/melonplaygroudndddd.png' },
+    { title: 'Monkey Mart', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/monkeymart.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/monkeymarrttttt.jpeg' },
+    { title: 'MotoX3M', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/motox3m.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/motoox3mmm.jpeg' },
+    { title: 'MotoX3M 2', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/motox3m2.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/mtotox3mmmm2222.jpg' },
+    { title: 'MotoX3M 3', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/motox3m3.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/motoootx3mmmm3333.jpg' },
+    { title: 'Paper.io', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/paperio2.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/paper-io-2_16x9-cover.png' },
+    { title: 'Plants VS Zombies', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/plantsvszombies.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/pvzzzzzzzz.jpeg' },
+    { title: 'Ragdoll Archers', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/ragdollarchers.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/ragdollarchererss.jpeg' },
+    { title: 'Retro Bowl', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/retrobowl.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/retroroobowollwlwl.jpeg' },
+    { title: 'Slope', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/slope.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/slopepeppee.jpeg' },
+    { title: 'Slow Roads', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/slowroads.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/slow-roads.jpg' },
+    { title: 'Snow Rider', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/snowrider.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/snowriderrss.jpeg' },
+    { title: 'Stick Man Hook', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/stickmanhook.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/stick-hook-game1.png' },
+    { title: 'Super Hot', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/superhot.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/superhot.jpeg' },
+    { title: 'Tag', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/tag.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/tag-online.png' },
+    { title: 'Temple Run 2', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/templerun2.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/templerun2.png' },
+    { title: 'Time Shooter 2', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/timeshooter2.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/timeshooter2.jpeg' },
+    { title: 'Time Shooter 3', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/timeshooter3.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/timeshooter3.jpeg' },
+    { title: 'Tiny Fishing', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/tinyfishing.html', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/tinyfishing.jpg' },
+    { title: 'Tomb of the Mask', url: 'https://raw.githubusercontent.com/CoolDude2349/Offline-HTML-Games-Pack/master/offline/tombofthemask.htm', img: 'https://raw.githubusercontent.com/xxuep/games/main/images/tombofthemask.png' }
+];
+
+        let isSidebarOpen = false;
+        function toggleSidebar() {
+            isSidebarOpen = !isSidebarOpen;
+            document.getElementById('sidebar').style.transform = isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)';
+        }
+
+        window.onload = () => {
+            const savedWP = localStorage.getItem('s4_wallpaper');
+            if (savedWP) { const {type, val} = JSON.parse(savedWP); setWallpaper(type, val); }
+            updatePanicDisplay();
+            document.getElementById('panicLink').value = panicUrl;
+            document.getElementById('gameGrid').innerHTML = GAMES.map(g => `
+                <div class="game-card bg-slate-900/40 backdrop-blur-sm rounded-xl overflow-hidden cursor-pointer group" onclick="launchGame('${g.url}', '${g.title}')">
+                    <div class="aspect-video bg-slate-800 overflow-hidden"><img src="${g.img}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all"></div>
+                    <div class="p-4"><p class="text-[10px] uppercase font-bold tracking-widest text-slate-400 group-hover:text-cyan-400">${g.title}</p></div>
+                </div>
+            `).join('');
+            
+            const starCanvas = document.getElementById('starfield');
+            const starCtx = starCanvas.getContext('2d');
+            let stars = Array.from({ length: 150 }, () => ({ x: Math.random(), y: Math.random(), s: Math.random() * 2, o: Math.random() }));
+            function draw() {
+                starCanvas.width = window.innerWidth; starCanvas.height = window.innerHeight;
+                starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+                stars.forEach(s => { starCtx.fillStyle = `rgba(255, 255, 255, ${s.o})`; starCtx.beginPath(); starCtx.arc(s.x * starCanvas.width, s.y * starCanvas.height, s.s, 0, Math.PI * 2); starCtx.fill(); });
+                requestAnimationFrame(draw);
+            }
+            draw();
+        };
+    </script>
+</body>
+</html>
